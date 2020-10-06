@@ -1,8 +1,8 @@
 def T2to3(x,y,image):
-    cx = 2044.08
-    cy = 1550.39
-    fx = 1955.83
-    fy = 1955.42
+    cy = 2044.08
+    cx = 1550.39
+    fy = 1955.83
+    fx = 1955.42
     xaxis = int(y)  ##
     yaxis = int(x)  ##inverse x,y pixel
     zw1 = int(image[xaxis][yaxis])

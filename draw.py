@@ -1,6 +1,12 @@
+import random
+
 import cv2
 import numpy as np
-
+def randomcolor():
+    colora=()
+    for i in range(3):
+        colora=colora+(random.randint(0,255),)
+    return colora
 
 def drawMatches(img1, kp1, img2, kp2, matches):
     """
@@ -42,9 +48,15 @@ def drawMatches(img1, kp1, img2, kp2, matches):
 
     # For each pair of points we have between both images
     # draw circles, then connect a line between them
-    z=[(0,0,255),(0,255,0),(255,0,0),(100,30,200),(111,200,255),(122,30,0),(255,60,255),(125,125,0)]
+    z=[(0,0,255),(0,255,0),(255,0,0),(100,30,200),(111,200,255),(122,30,0),(255,60,255),(125,125,0),(125,30,242),(20,10,111),]
+    s=[]
     for i in range(len(matches)):
-        q=z[i]
+        # q=z[i]
+        q=randomcolor()
+        while q in s:
+            q=randomcolor()
+        s.append(q)
+
         for mat in matches[i]:
             # Get the matching keypoints for each of the images
             img1_idx = mat[0].queryIdx

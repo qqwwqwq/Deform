@@ -12,6 +12,7 @@ import matplotlib
 import pyk4a
 from pyk4a import Config, PyK4A, ColorResolution
 import numpy as np
+np.set_printoptions(suppress=True)
 from matplotlib import pyplot as plt
 matplotlib.use('TkAgg')
 import cv2
@@ -90,11 +91,12 @@ def neighbor(p1,q1,p2,q2):
     s2=1
     d1=distan(p1.pt,p2.pt)
     d2=distan(q1.pt,q2.pt)
+
     for i in range(len(grapy_q)):
-        if(grapy_q[p1.class_id][i]<d1):
+        if(grapy_p[p1.class_id][i]<d1):
             s1=s1+1
     for i in range(len(grapy_p)):
-        if(grapy_p[q1.class_id][i]<d2):
+        if(grapy_q[q1.class_id][i]<d2):
             s2=s2+1
 
     # if(s1<30 and s2<6):
@@ -107,7 +109,7 @@ def neighbor(p1,q1,p2,q2):
 def scale(p1,q1,p2,q2):
     l1=distan(p1.pt,p2.pt)
     l2=distan(q1.pt,q2.pt)
-    threshold=1.5
+    threshold=1.4
     if(l1!=0 and l2 !=0):
         if (1 / threshold <= ((p1.size / l1) / (q1.size / l2)) <= threshold and 1 / threshold <= (
                 (p2.size / l1) / (q2.size / l2)) <= threshold):
@@ -120,7 +122,7 @@ def scale(p1,q1,p2,q2):
             return False
 ##########################????????????????????????
 def orientation(p1,q1,p2,q2):
-    print(p1.pt,q1.pt,p2.pt,q2.pt)
+    #print(p1.pt,q1.pt,p2.pt,q2.pt)
     a=abs(ang(p1.pt,p2.pt)%180-ore(p1.pt)%180)
     b=abs(ang(q1.pt,q2.pt)%180-ore(q1.pt)%180)
 
@@ -196,171 +198,324 @@ def sift_detect(img1, img2):
     # Apply ratio test
 
 
-    good = [[m] for m, n in matches if m.distance < 0.8* n.distance]
+    good = [[m] for m, n in matches if m.distance < 0.7* n.distance]
     #build grapy
     grapy_all=np.zeros((len(good), len(good)))
     grapy_p = np.zeros((len(good), len(good)))
     grapy_q = np.zeros((len(good), len(good)))
     for i in range(len(good)):
-        for j in range(len(good)):
-            p1=kp1[good[i][0].queryIdx]
+        for j in range(i+1, len(good)):
+            if i==j:
+                continue
+            p1 = kp1[good[i][0].queryIdx]
             q1 = kp2[good[i][0].trainIdx]
             kp1[good[i][0].queryIdx].class_id = i
             kp2[good[i][0].trainIdx].class_id = i
-            p2=kp1[good[j][0].queryIdx]
-            q2=kp2[good[j][0].trainIdx]
-            grapy_p[i][j]=distan(p1.pt,p2.pt)
-            grapy_q[i][j]=distan(q1.pt,q2.pt)
+            p2 = kp1[good[j][0].queryIdx]
+            q2 = kp2[good[j][0].trainIdx]
+            grapy_p[i][j] = distan(p1.pt, p2.pt)
+            grapy_q[i][j] = distan(q1.pt, q2.pt)
             grapy_p[j][i] = distan(p1.pt, p2.pt)
             grapy_q[j][i] = distan(q1.pt, q2.pt)
     for i in range(len(good)):
-        for j in range(len(good)):
+        for j in range( i+1,len(good)):
+            if i==j:
+                continue
             p1 = kp1[good[i][0].queryIdx]
             q1 = kp2[good[i][0].trainIdx]
             p2 = kp1[good[j][0].queryIdx]
             q2 = kp2[good[j][0].trainIdx]
-            # if(neighbor(p1,q1,p2,q2)):
-            #         if(orientation(p1,q1,p2,q2)):
-            #     if(scale(p1,q1,p2,q2)):
             n1, n2 = neighbor(p1, q1, p2, q2)
             o1, o2 = orientation(p1, q1, p2, q2)
             kt1.append(n1)
             kt2.append(n2)
-            kt5.append(o1)
-            kt6.append(o2)
-    m1=max(kt1)
-    m11=min(kt1)
-    m2=max(kt2)
-    m22=min(kt2)
+            kt5.append(o1+o2)
+            # kt6.append(o2)
+    m1 = max(kt1)
+    m11 = min(kt1)
+    m2 = max(kt2)
+    m22 = min(kt2)
     m5 = max(kt5)
     m55 = min(kt5)
-    m6 = max(kt6)
-    m66 = min(kt6)
+    # m6 = max(kt6)
+    # m66 = min(kt6)
     throsld = len(kt1)
+    '''
+    kp1: keypointset in first image
+    kp2:keypointset in second image
+    element in good: the match of a pair of the key point
+    queryIdx: index in kp1
+    trianIdx: index in kp2
+    '''
     for i in range(len(good)):
-        for j in range(len(good)):
+        for j in range( i+1,len(good)):
+            if i==j:
+                continue
             p1 = kp1[good[i][0].queryIdx]
             q1 = kp2[good[i][0].trainIdx]
             p2 = kp1[good[j][0].queryIdx]
             q2 = kp2[good[j][0].trainIdx]
             n1, n2 = neighbor(p1, q1, p2, q2)
             o1, o2 = orientation(p1, q1, p2, q2)
-            n11=(n1-m11)*throsld/(m1-m11)
+            n11 = (n1 - m11) * throsld / (m1 - m11)
             n22 = (n2 - m22) * throsld / (m2 - m22)
-            o11=(o1-m55)*throsld/(m5-m55)
-            o22 = (o2 - m66) * throsld/ (m6 - m66)
-            t = (n11 + n22 + o11 + o22)
+            o11 = (o1+o2 - m55) * throsld / (m5 - m55)
+            # o22 = (o2 - m66) * throsld / (m6 - m66)
+            t = ((n11 + n22) + o11 )
+            # t=n11+o11
             symb.append(t)
-    maxs=max(symb)
-    mins=min(symb)
-
+    maxs = max(symb)
+    mins = min(symb)
+    qq=[]
     for i in range(len(good)):
-        for j in range(i+1,len(good)):
+        for j in range(i + 1, len(good)):
             p1 = kp1[good[i][0].queryIdx]
             q1 = kp2[good[i][0].trainIdx]
             p2 = kp1[good[j][0].queryIdx]
             q2 = kp2[good[j][0].trainIdx]
             n1, n2 = neighbor(p1, q1, p2, q2)
             o1, o2 = orientation(p1, q1, p2, q2)
-            n11=(n1-m11)*throsld/(m1-m11)
+            n11 = (n1 - m11) * throsld / (m1 - m11)
             n22 = (n2 - m22) * throsld / (m2 - m22)
-            o11=(o1-m55)*throsld/(m5-m55)
-            o22 = (o2 - m66) * throsld/ (m6 - m66)
-            t =(n11+n22+o11+o22-mins)*throsld/(maxs-mins)
-            kk1.append(n11+n22)
+            o11 = (o1+o2 - m55) * throsld / (m5 - m55)
+            # o22 = (o2 - m66) * throsld / (m6 - m66)
+            t = (n11 +o11+n22 - mins) * throsld / (maxs - mins)
+            #kk1.append(n11 + n22)
             # kk2.append(s11+s22)
-            kk3.append(o11+o22)
+            #kk3.append(o11 + o22)
             kk4.append(t)
-            #print("this s neighbor",neighbor(p1, q1, p2, q2), scale(p1, q1, p2, q2), orientation(p1, q1, p2, q2), t)
+            # print("this s neighbor", neighbor(p1, q1, p2, q2), scale(p1, 3q1, p2, q2), orientation(p1, q1, p2, q2), t)
 
-##############################################################################8####################################
+            ##############################################################################8####################################
             # if n1+n2<20 and s1+s2<4 and o1+o2<60:
-            step=throsld/8
+            step = throsld /7
+            print(step,"222222222222222222222")
             if scale(p1, q1, p2, q2):
                 if t > 0 and t < step:
-                    print(throsld)
-                    grapy_all[i][j] = 1/t
-                    grapy_all[j][i] = 1/t
+                    # print(throsld)
+                    print(t)
+                    qq.append(1)
+                    grapy_all[i][j] = 1
+                    grapy_all[j][i] = 1
                 elif t > step:
+                    qq.append((int(t / step) * step))
                     grapy_all[i][j] = 1 / (int(t / step) * step)
                     grapy_all[j][i] = 1 / (int(t / step) * step)
-
     print(grapy_q)
     print(grapy_p)
-    a=[]
-    for i in good:
-        sum=0
-        for j in range(len(grapy_all)):
-            c=kp1[i[0].queryIdx].class_id
-            if(grapy_all[c][j]==1):
-                sum=sum+1
-                if(sum>=1):
-                    a.append(i)
+    print(qq)
+    # a=[]
+    # for i in good:
+    #     sum=0
+    #     for j in range(len(grapy_all)):
+    #         c=kp1[i[0].queryIdx].class_id
+    #         if(grapy_all[c][j]==1):
+    #             sum=sum+1
+    #             if(sum>=1):
+    #                 a.append(i)
     ######
-    final=[]
-    bob=MCL(grapy_all,2,2.5)#get cluster.....................................
-    lens=[]
-    long=2
-    for i in bob:
-        if len(i)>=2:
-            long=3
-    if(len(bob)>1):
+    final = []
+    bob = MCL(grapy_all, 2, 2)  ##get cluster
+    lens = []
+    long = 2
+    # for i in bob:
+    #     if len(i) >= 2:
+    #         long = 3
+    if (len(bob) > 1):
         for j in bob:
             lens.append(len(j))
-        for i in range(7):
+        for i in range(30):
             for q in range(len(lens)):
                 if lens[q] == max(lens):
-                    if(len(bob[q])>=long):
+                    if (len(bob[q]) >= long):
                         final.append(bob[q])
                         lens[q] = 0
                     break
     else:
         for i in bob:
-            if len(i)>2:
+            if len(i) > 2:
                 final.append(i)
 
-    apple=[]
+    apple = []
     for u in range(len(final)):
-        pp=[]
+        pp = []
         for i in good:
             c = kp1[i[0].queryIdx].class_id
             print(c)
-            if(c in final[u]):
+            if (c in final[u]):
                 pp.append(i)
         apple.append(pp)
-    print("final",apple)
-    # cv2.drawMatchesKnn expects list of lists as matches.
-    if len(apple)<1:
+    print("final", apple)
+    print(len(apple))
+    # cv2.drawMatchesKnn expects list of list   s as matches.
+    if len(apple) < 1:
         print("not good")
+#     for i in range(len(good)):
+#         for j in range(1+i,len(good)):
+#             p1=kp1[good[i][0].queryIdx]
+#             q1 = kp2[good[i][0].trainIdx]
+#             kp1[good[i][0].queryIdx].class_id = i
+#             kp2[good[i][0].trainIdx].class_id = i
+#             p2=kp1[good[j][0].queryIdx]
+#             q2=kp2[good[j][0].trainIdx]
+#             grapy_p[i][j]=distan(p1.pt,p2.pt)
+#             grapy_q[i][j]=distan(q1.pt,q2.pt)
+#             grapy_p[j][i] = distan(p1.pt, p2.pt)
+#             grapy_q[j][i] = distan(q1.pt, q2.pt)
+#     for i in range(len(good)):
+#         for j in range(1+i,len(good)):
+#             p1 = kp1[good[i][0].queryIdx]
+#             q1 = kp2[good[i][0].trainIdx]
+#             p2 = kp1[good[j][0].queryIdx]
+#             q2 = kp2[good[j][0].trainIdx]
+#             # if(neighbor(p1,q1,p2,q2)):
+#             #         if(orientation(p1,q1,p2,q2)):
+#             #     if(scale(p1,q1,p2,q2)):
+#             n1, n2 = neighbor(p1, q1, p2, q2)
+#             o1, o2 = orientation(p1, q1, p2, q2)
+#             kt1.append(n1)
+#             kt2.append(n2)
+#             kt5.append(o1)
+#             kt6.append(o2)
+#     m1=max(kt1)
+#     m11=min(kt1)
+#     m2=max(kt2)
+#     m22=min(kt2)
+#     m5 = max(kt5)
+#     m55 = min(kt5)
+#     m6 = max(kt6)
+#     m66 = min(kt6)
+#     throsld = len(kt1)
+#     print(throsld)
+#     for i in range(len(good)):
+#         for j in range(1+i,len(good)):
+#             p1 = kp1[good[i][0].queryIdx]
+#             q1 = kp2[good[i][0].trainIdx]
+#             p2 = kp1[good[j][0].queryIdx]
+#             q2 = kp2[good[j][0].trainIdx]
+#             n1, n2 = neighbor(p1, q1, p2, q2)
+#             o1, o2 = orientation(p1, q1, p2, q2)
+#             n11=(n1-m11)*throsld/(m1-m11)
+#             n22 = (n2 - m22) * throsld / (m2 - m22)
+#             o11=(o1-m55)*throsld/(m5-m55)
+#             o22 = (o2 - m66) * throsld/ (m6 - m66)
+#             t = (n11 + n22 + o11 + o22)
+#             symb.append(t)
+#     maxs=max(symb)
+#     mins=min(symb)
+#
+#     for i in range(len(good)):
+#         for j in range(i+1,len(good)):
+#             p1 = kp1[good[i][0].queryIdx]
+#             q1 = kp2[good[i][0].trainIdx]
+#             p2 = kp1[good[j][0].queryIdx]
+#             q2 = kp2[good[j][0].trainIdx]
+#             n1, n2 = neighbor(p1, q1, p2, q2)
+#             o1, o2 = orientation(p1, q1, p2, q2)
+#             n11=(n1-m11)*throsld/(m1-m11)
+#             n22 = (n2 - m22) * throsld / (m2 - m22)
+#             o11=(o1-m55)*throsld/(m5-m55)
+#             o22 = (o2 - m66) * throsld/ (m6 - m66)
+#             t =(n11+n22+o11+o22-mins)*throsld/(maxs-mins)
+#             kk1.append(n11+n22)
+#             # kk2.append(s11+s22)
+#             kk3.append(o11+o22)
+#             kk4.append(t)
+#             #print("this s neighbor",neighbor(p1, q1, p2, q2), scale(p1, q1, p2, q2), orientation(p1, q1, p2, q2), t)
+#
+# ##############################################################################8####################################
+#             # if n1+n2<20 and s1+s2<4 and o1+o2<60:
+#             step=throsld/9
+#             if scale(p1, q1, p2, q2):
+#                 if t > 0 and t < step:
+#                     #print(throsld)
+#                     grapy_all[i][j] = 1/t
+#                     grapy_all[j][i] = 1/t
+#                 elif t > step:
+#                     grapy_all[i][j] = 1 / (int(t / step) * step)
+#                     grapy_all[j][i] = 1 / (int(t / step) * step)
+#
+#     print(grapy_q)
+#     print(grapy_p)
+#     a=[]
+#     for i in good:
+#         sum=0
+#         for j in range(len(grapy_all)):
+#             c=kp1[i[0].queryIdx].class_id
+#             if(grapy_all[c][j]==1):
+#                 sum=sum+1
+#                 if(sum>=1):
+#                     a.append(i)
+#     ######
+#     print(222)
+#     final=[]
+#     bob=MCL(grapy_all,2,2)#get cluster.....................................
+#     lens=[]
+#     long=2
+#     # for i in bob:
+#     #     if len(i)>=2:
+#     #         long=3
+#     if(len(bob)>1):
+#         for j in bob:
+#             lens.append(len(j))
+#         for i in range(20):
+#             for q in range(len(lens)):
+#                 if lens[q] == max(lens):
+#                     if(len(bob[q])>=long):
+#                         final.append(bob[q])
+#                         lens[q] = 0
+#                     break
+#     else:
+#         for i in bob:
+#             if len(i)>2:
+#                 final.append(i)
+#
+#     apple=[]
+#     for u in range(len(final)):
+#         pp=[]
+#         for i in good:
+#             c = kp1[i[0].queryIdx].class_id
+#             print(c)
+#             if(c in final[u]):
+#                 pp.append(i)
+#         apple.append(pp)
+#     print("final",apple)
+#     # cv2.drawMatchesKnn expects list of lists as matches.
+#     if len(apple)<1:
+#         print("not good")
  ################################find circul
     imgg =drawMatches(img1, kp1, img2, kp2, apple)
     img2 = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good, (0, 0, 255), (255, 0, 0), None, flags=2)
     # print(k1)
-    ww=[1,2,3,4,5,6,7,8,9,10,100]
-    s = Series(kk1)
-    ss2=Series(kk2)
-    ss3 = Series(kk3)
+    # ww=[1,2,3,4,5,6,7,8,9,10,100]
+    # s = Series(kk1)
+    # ss2=Series(kk2)
+    # ss3 = Series(kk3)
+    ss=Series(qq)
     ss4 = Series(kk4)
-    plt.subplot(221)
-    plt.hist(s,  bins=400, color='r', density=True, range=(-1, throsld))
-    plt.subplot(222)
-    plt.hist(ss2,  bins=400, color='r',density=True,range=(-1,throsld))
-    plt.subplot(223)
-    plt.hist(ss3,  bins=200, color='r', density=True, range=(-1, throsld))
-    plt.subplot(224)
+    # plt.subplot(221)
+    # plt.hist(s,  bins=400, color='r', density=True, range=(-1, throsld))
+    # plt.subplot(222)
+    # plt.hist(ss2,  bins=400, color='r',density=True,range=(-1,throsld))
+    # plt.subplot(223)
+    # plt.hist(ss3,  bins=200, color='r', density=True, range=(-1, throsld))
+    # plt.subplot(224)
+    plt.subplot(121)
     plt.hist(ss4,  bins=400, color='r', density=True, range=(-1, throsld))
+    plt.subplot(122)
+    plt.hist(ss, bins=400, color='r', density=True, range=(-1, throsld))
     plt.show()
-    print(kk1[:10])
-    print(kk2[:10])
-    print(kk3[:10])
+    # # print(kk1[:10])
+    # # print(kk2[:10])
+    # # print(kk3[:10])
     #
     return bgr_rgb(imgg/255)
 
 
 if __name__ == "__main__":
     # load image
-    image_a = cv2.imread('/home/hexin/桌面/deform/news2.png')
-    image_b = cv2.imread('/home/hexin/桌面/cool2.png')
+    image_a = cv2.imread('/home/hexin/桌面/dataset/cool.png')
+    image_b = cv2.imread('/home/hexin/桌面/dataset/22.png')
     image_d = cv2.imread('/home/hexin/桌面/depth/cool2.png')
     #################################################nn
 ##########d

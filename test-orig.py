@@ -87,12 +87,12 @@ def neighbor(p1,q1,p2,q2):
     d1=distan(p1.pt,p2.pt)
     d2=distan(q1.pt,q2.pt)
     for i in range(len(grapy_q)):
-        if(grapy_q[p1.class_id][i]<d1):
+        if(grapy_p[p1.class_id][i]<d1):
             s1=s1+1
     for i in range(len(grapy_p)):
-        if(grapy_p[q1.class_id][i]<d2):
+        if(grapy_q[q1.class_id][i]<d2):
             s2=s2+1
-    if(s1<20 and s2<10):
+    if(s1<20 and s2<20):
         return True
     else:
         return False
@@ -115,7 +115,7 @@ def orientation(p1,q1,p2,q2):
     print("1111111111111111111", a, b, c, d)
 
     #if(abs(a-b)<=20 or abs(c-d)<=20):
-    if abs(a - b) <= 25 and abs(c-d) <=25:
+    if abs(a - b) <= 30 and abs(c-d) <=30:
         return True
     else:
         return False
@@ -125,33 +125,7 @@ def sift_detect(img1, img2):
     global grapy_p
     global grapy_q
     sift = cv2.xfeatures2d.SIFT_create()
-    ###############################
 
-    dst1 = cv2.fastNlMeansDenoisingColored(img1, None, 10, 10, 7, 21)
-
-    dst2 = cv2.fastNlMeansDenoisingColored(img2, None, 10, 10, 7, 21)
-
-    ##################################
-    Maximg1 = np.max(img1)
-    Minimg1 = np.min(img1)
-    # 输出最小灰度级和最大灰度级
-    Omin, Omax = 0, 255
-    # 求 a, b
-    a1 = float(Omax - Omin) / (Maximg1 - Minimg1)
-    b1 = Omin - a1 * Minimg1
-    # 线性变换
-    O1 = a1 * img1 + b1
-    O1 = O1.astype(np.uint8)
-    Maximg2 = np.max(img2)
-    Minimg2 = np.min(img2)
-    # 输出最小灰度级和最大灰度级
-    Omin, Omax = 0, 255
-    # 求 a, b
-    a2 = float(Omax - Omin) / (Maximg2 - Minimg2)
-    b2 = Omin - a2 * Minimg2
-    # 线性变换
-    O2 = a2 * img2 + b2
-    O2 = O2.astype(np.uint8)
     # find the keypoints and descriptors with SIFT
     kp1, des1 = sift.detectAndCompute( img1 , None)
     kp2, des2 = sift.detectAndCompute( img2 , None)
@@ -167,7 +141,7 @@ def sift_detect(img1, img2):
     # Apply ratio test
 
 
-    good = [[m] for m, n in matches if m.distance < 0.85* n.distance]
+    good = [[m] for m, n in matches if m.distance < 0.7* n.distance]
     #build grapy
     grapy_all=np.zeros((len(good), len(good)))
     grapy_p = np.zeros((len(good), len(good)))
@@ -211,13 +185,13 @@ def sift_detect(img1, img2):
     bob=MCL(grapy_all,2,2)#get cluster
     lens=[]
     long=2
-    for i in bob:
-        if len(i)>=2:
-            long=3
+    # for i in bob:
+    #     if len(i)>=2:
+    #         long=3
     if(len(bob)>1):
         for j in bob:
             lens.append(len(j))
-        for i in range(8):
+        for i in range(30):
             for q in range(len(lens)):
                 if lens[q] == max(lens):
                     if(len(bob[q])>=long):
@@ -239,6 +213,7 @@ def sift_detect(img1, img2):
                 pp.append(i)
         apple.append(pp)
     print("final",apple)
+    print(len(apple))
     # cv2.drawMatchesKnn expects list of lists as matches.
     if len(apple)<1:
         print("not good")
@@ -256,8 +231,8 @@ def sift_detect(img1, img2):
 
 if __name__ == "__main__":
     # load image
-    image_a = cv2.imread('/home/hexin/桌面/deform/news2.png')
-    image_b = cv2.imread('/home/hexin/桌面/cool2.png')
+    image_a = cv2.imread('/home/hexin/桌面/dataset/cool.png')
+    image_b = cv2.imread('/home/hexin/桌面/dataset/bad.png')
     image_d = cv2.imread('/home/hexin/桌面/cool2.png')
     ###########################################################
     # getters and setters directly get and set on device

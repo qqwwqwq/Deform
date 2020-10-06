@@ -2,15 +2,16 @@ from math import sqrt
 
 import numpy as np
 from numpy.linalg import matrix_power
+
 def MCL(matrix,e,r):
+
     global qb
     global targ
-    print(matrix)
     l=len(matrix)
     for i in range(l):
         matrix[i][i]=1
+    print(matrix)
     yi=matrix/matrix.sum(axis=0)
-    print(yi)
     yi2=yi
     past=np.zeros((len(matrix), len(matrix)))
     sum=0
@@ -21,7 +22,7 @@ def MCL(matrix,e,r):
         yi2 = yi2 / yi2.sum(axis=0)
         sum=sum+1
         print(sum)
-    print(past)
+
     clustr=[]
     print(clustr)
     for i in range(len(yi2)):
@@ -39,7 +40,6 @@ def MCL(matrix,e,r):
             qb=[]
             findcluster(clustr,i,qb)
             final.append(qb)
-    print(final)
     return final
 def findcluster(clustr,i,qb):
     global targ
@@ -68,5 +68,14 @@ def vector(p1, p2, p3):
         return [a / l, b / l, c / l]
     else:
         return [a, b, c]
-print(vector([-158, 22, 270], [-157, 26, 270], [-158, 24, 269]))
-print(int(65535))
+
+w=np.zeros((7,7))
+ss=[[0,1/7,1,1/3,0,0,0],[1/7,0,0,1/7,0,0,0],[1,0,0,1/2,1/6,0,0],[1/3,1/7,1/2,0,0,0,0],[0,0,1/6,0,0,1/2,1/3],[0,0,0,0,1/2,0,1],[0,0,0,0,1/3,1,0]]
+for i in range(7):
+    for j in range(7):
+        print(1)
+        w[i][j]=ss[i][j]
+print(w)
+print(MCL(w,2,2))
+# print(vector([-158, 22, 270], [-157, 26, 270], [-158, 24, 269]))
+# print(int(65535))
