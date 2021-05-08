@@ -38,6 +38,7 @@ def check(coordinate,imagd):
     yy= (x - cy) * z / fy
     print(xx, yy, z, xw, yw, zw, 'xy')
     #
+    print("ffffffffffffffffffffffffk",pow(zw-z,2))
     errors=sqrt(pow(xw-xx,2)+pow(yw-yy,2)+pow(zw-z,2))
     # errors = abs(xw - xx) * abs(yw - yy) * abs(zw - z)
     # errors=abs(zw-z)
@@ -148,6 +149,7 @@ def slide(t,gap,start,end,planea,planeb,imgd,flag):
     time=[0]*4
     switch=[0]*4
     for i in range(start,end-alpa,ders):
+
         print(1)
         if flag==0:
             point1=cal(i)
@@ -155,13 +157,37 @@ def slide(t,gap,start,end,planea,planeb,imgd,flag):
         else:
             point1 = cal2(i)
             point2 = cal2(i + ders)
-        if max(sum) >step/ders/2:
+        if max(sum) >(step/ders)/2:
+            sob = i
+            qob = i+der
+            if flag==0:
+                s1=cal(sob)
+                s2=cal(qob)
+            else:
+                s1=cal2(sob)
+                s2=cal2(qob)
+            print(check(s1,imgd),check(s2,imgd))
             # print(point1, point2)
-            drawlines(point1, point2, imgd)
+            while check(s1,imgd)<15:
+                if flag==0:
+                    sob-=8
+                    s1=cal(sob)
+                else:
+                    sob -= 8
+                    s1 = cal2(sob)
+            while check(s2,imgd)<15:
+                if flag==0:
+                    qob+=8
+                    s2=cal(qob)
+                else:
+                    qob += 8
+                    s2 = cal2(qob)
+            drawlines(s1, s2, imgd)
+            # drawlines(point1, point2, imgd)
             return True
         # print("p1p2-------------------------------",check(point1, imgd),check(point2, imgd),point1,point2)
-        if check(point1, imgd)<4 :
-            if check(point2, imgd)<4 :
+        if check(point1, imgd)<tree+2 :
+            if check(point2, imgd)<tree+2 :
                 cc = solve([gapa[0] * x + gapa[1] * y + gapa[2] * z - da,
                             (x - point1[0]) ** 2 + (y - point1[1]) ** 2 + (z - point1[2]) ** 2 - 25,
                             t[0] * (point1[0] - x) + t[1] * (point1[1] - y) + t[2] * (point1[2] - z)], [x, y, z])
@@ -169,38 +195,32 @@ def slide(t,gap,start,end,planea,planeb,imgd,flag):
                             (x - point2[0]) ** 2 + (y - point2[1]) ** 2 + (z - point2[2]) ** 2 -25,
                             t[0] * (point2[0] - x) + t[1] * (point2[1] - y) + t[2] * (point2[2] - z)], [x, y, z])
                 # print("ccdd", cc, dd,point1,point2)
-                p1,p2=check2(cc[0], imgd,planea),check2(cc[1], imgd,planea)
-                q1,q2=check2(dd[0], imgd,planeb), check2(dd[1], imgd,planeb)
+                # p1,p2=check2(cc[0], imgd,planea),check2(cc[1], imgd,planea)
+                # q1,q2=check2(dd[0], imgd,planeb), check2(dd[1], imgd,planeb)
+                p1, p2 = check(cc[0], imgd), check(cc[1], imgd)
+                q1, q2 = check(dd[0], imgd), check(dd[1], imgd)
+
                 print([p1,p2,q1,q2],"1234")
                 print(sum,"sum")
                 if p1<tree and q1<tree :
                     if sum[0]==time[0]:
-                    # if sum[1]<sum[0]:
-                    #     sum[1]=0
-                    # if sum[2]<sum[0]:
-                    #     sum[2]=0
-                    # if sum[3]<sum[0]:
-                    #     sum[3]=0
                         sum[0]+=1
                         switch[0]=0
                         print(1111111)
                     else:
+                        print(-1)
                         sum[0]=0
                         time[0]=0
                         switch[0]=1
 
                 if p1<tree and q2<tree :
-                    # if sum[0]<=sum[1]:
-                    #     sum[0]=0
-                    # if sum[2]<sum[1]:
-                    #     sum[2]=0
-                    # if sum[3]<sum[1]:
-                    #     sum[3]=0
+
                     if sum[1]==time[1]:
                         switch[1]=0
                         sum[1]+=1
                         print(222222)
                     else:
+                        print(-2)
                         sum[1]=0
                         switch[1]=1
                         time[1]=0
@@ -208,32 +228,23 @@ def slide(t,gap,start,end,planea,planeb,imgd,flag):
 
                 if p2<tree and q1<tree :
 
-                    # if sum[0]<=sum[2]:
-                    #     sum[0]=0
-                    # if sum[1]<=sum[2]:
-                    #     sum[1]=0
-                    # if sum[3]<sum[2]:
-                    #     sum[3]=0
+
                     if sum[2] == time[2]:
                         switch[2] = 0
                         sum[2] += 1
                         print(333333)
                     else:
+                        print(-3)
                         sum[2] = 0
                         switch[2] = 1
                         time[2] = 0
                 if p2<tree and q2<tree :
-                    # if sum[0] <= sum[3]:
-                    #     sum[0] = 0
-                    # if sum[1] <= sum[3]:
-                    #     sum[1] = 0
-                    # if sum[2] <= sum[3]:
-                    #     sum[2]=0
                     if sum[3] == time[3]:
                         switch[3] = 0
                         sum[3] += 1
                         print(44444)
                     else:
+                        print(-4)
                         sum[3] = 0
                         switch[3] = 1
                         time[3] = 0
@@ -254,6 +265,7 @@ def slide(t,gap,start,end,planea,planeb,imgd,flag):
             switch = [0] * 4
 
     return False
+
 
 
 def LLs(x, y, z, size):
@@ -296,11 +308,11 @@ def drawlines(p1, p2, imgd):
     x1 = yw1 * fy / zw1 + cy
     y2 = xw2 * fx / zw2 + cx
     x2 = yw2 * fy / zw2 + cy
-    x3 = 0
-    x4 = 3000
-    y3 = (x3 - x1) * (y2 - y1) / (x2 - x1) + y1
-    y4 = (x4 - x1) * (y2 - y1) / (x2 - x1) + y1
-    cv2.line(imgd, (int(y3), int(x3)), (int(y4), int(x4)), (0, 0, 255), thickness=5)
+    # x3 = x1
+    # x4 = x2
+    # y3 = (x3 - x1) * (y2 - y1) / (x2 - x1) + y1
+    # y4 = (x4 - x1) * (y2 - y1) / (x2 - x1) + y1
+    cv2.line(imgd, (int(y1), int(x1)), (int(y2), int(x2)), (0, 0, 255), thickness=16)
 
 
 def angelsurface(a, b):
@@ -431,10 +443,10 @@ def growprocess(seed, imgd):
         xx=int(out[1]*fy/out[2]+cy)
         zz=imgd[xx][yy]
         xw=(yy - cx) * zz / fx
-        yw=(xx-cy)*zz/fx
-        print(out,[xw,yw,zz])
-        error=sqrt(pow(out[0]-xw,2)+pow(out[1]-yw,2)+pow(out[2]-zz,2))
-        print(error)
+        yw=(xx-cy)*zz/fy
+        #print(out,[xw,yw,zz])
+        error=sqrt(pow(out[0]-xw,2)+pow(out[1]-yw,2)+pow(float(out[2])-float(zz),2))
+        #print(error)
         return error
 
 
@@ -451,7 +463,7 @@ def growprocess(seed, imgd):
     rr(seed[0])
     preve = []
     trge = 3
-    while j < 250:
+    while j < 150:
         # print(dir, distan)
         if j ==1:
             seed0 = []
@@ -485,26 +497,31 @@ def growprocess(seed, imgd):
             continue
         seed1 = []
         print(j)
+        ober=2.7
         if j < 3072*4096/400:
             thre = 4* pow(1 - pow(numpy.e, -j), 2)
         else:
             thre = 0.09 * pow(distan, 2) * 9 * pow(1 - pow(np.e, -j), 2)
         for i in range(down - 1, up + 2):
-            if  imgd[(i, left - 1)] != 0 and check([ i, left - 1], thre):
-                if  [i,  left] in preve or [ i - 1, left] in preve or [i + 1,  left] in preve and check2(i,left-1)<0.2:
-                    seed1.append([ i, left - 1])
+            if  imgd[(i, left - 1)] != 0 :
+                if  [i,  left] in preve or [ i - 1, left] in preve or [i + 1,  left] in preve :
+                    if check2(i,left-1)<ober:
+                        seed1.append([ i, left - 1])
         for i in range(down - 1, up + 2):
-            if imgd[(i, right + 1)] != 0 and check([ i, right + 1], thre):
-                if [i, right] in preve or [i - 1, right] in preve or [i + 1, right] in preve and check2(i, right+1)<0.2:
-                    seed1.append([i,right + 1])
+            if imgd[(i, right + 1)] != 0:
+                if [i, right] in preve or [i - 1, right] in preve or [i + 1, right] in preve :
+                    if check2(i, right+1)<ober:
+                        seed1.append([i,right + 1])
         for i in range(left, right + 1):
-            if imgd[(up + 1, i)] != 0 and check([up + 1, i], thre):
-                if [up, i] in preve or [up,i - 1] in preve or [up,i + 1] in preve and check2(up+1, i)<0.2:
-                    seed1.append([up + 1, i])
+            if imgd[(up + 1, i)] != 0:
+                if [up, i] in preve or [up,i - 1] in preve or [up,i + 1] in preve :
+                    if check2(up+1, i)<ober:
+                        seed1.append([up + 1, i])
         for i in range(left, right + 1):
-            if imgd[(down - 1, i)] != 0 and check([down - 1,i], thre):
-                if [down, i] in preve or [down, i - 1] in preve or [down, i + 1] in preve and check2(down-1, i)<0.2:
-                    seed1.append([down - 1, i])
+            if imgd[(down - 1, i)] != 0:
+                if [down, i] in preve or [down, i - 1] in preve or [down, i + 1] in preve :
+                    if check2(down-1, i)<ober:
+                        seed1.append([down - 1, i])
         preve = seed1[:]
         for i in seed1:
             rr(i)
@@ -521,14 +538,24 @@ def growprocess(seed, imgd):
         dir = [A[0][0],A[1][0],-1]
         distan = A[2][0]
         j += 1
-
+    #
     for i in seed:
         img[i[0]][i[1]]=0
     plt.imshow(img)
     plt.show()
     return (max(setx), min(setx), dir, distan, max(sety), min(sety))
 
-
+def cldis(a,b):
+    dira=a.direct
+    da=a.d
+    cena=a.locate
+    dirb=b.direct
+    db=b.d
+    cenb=b.locate
+    error1=abs(cenb[0]*dira[0]+cenb[1]*dira[1]+cenb[2]*dira[2]+a.d)
+    error2=abs(cena[0]*dirb[0]+cena[1]*dirb[1]+cena[2]*dirb[2]+b.d)
+    print(error1,error2,"12")
+    return abs(error2+error1)
 def cret(s, img):
     cx = 2044.08
     cy = 1550.39
@@ -543,23 +570,23 @@ def cret(s, img):
         yw1,
         z1], 0, w4, w1, w2, s[0], w5, w6)
     return out1
-
-img = np.load('/home/hexin/桌面/dep2.npy')
-out1=cret([[1100,1500]],img)
-out2=cret([[1550,2000]],img)
-print(out1.direct,out1.d,out2.direct,out2.d,"two plane")
-t,gap=bending(out1,out2)
-print("bending",t,gap)
-if abs(t[0])<abs(t[1]):
-    print("f1")
-    if slide(t, gap, int(min(out1.miny, out2.miny)) - 40,
-                            int(max(out1.maxy, out2.maxy)) + 40, out1, out2, img,1):
-
-        plt.imshow(img)
-        plt.show()
-else:
-    if slide(t, gap, int(min(out1.minx, out2.minx)) - 40,
-            int(max(out1.maxx, out2.maxx)) + 40, out1, out2, img, 0):
-        plt.imshow(img)
-        plt.show()
 #
+img = np.load('/home/hexin/桌面/dep.npy')
+out1=cret([[1650,1300]],img)
+out2=cret([[1600,1900]],img)
+print(cldis(out1,out2))
+# print(out1.direct,out1.d,out2.direct,out2.d,"two plane")
+# t,gap=bending(out1,out2)
+# print("bending",t,gap)
+# if abs(t[0])<abs(t[1]):
+#     print("f1")
+#     if slide(t, gap, int(min(out1.miny, out2.miny)) - 40,
+#                             int(max(out1.maxy, out2.maxy)) + 40, out1, out2, img,1):
+#
+#         plt.imshow(img)
+#         plt.show()
+# else:
+#     if slide(t, gap, int(min(out1.minx, out2.minx)) - 40,
+#             int(max(out1.maxx, out2.maxx)) + 40, out1, out2, img, 0):
+#         plt.imshow(img)
+#         plt.show()
